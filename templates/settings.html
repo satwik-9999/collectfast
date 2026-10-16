@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Business Settings &bull; CollectFast{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+
+    {% if request.query_params.get('saved') %}
+    <div class="bg-emerald-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <i data-lucide="check-circle" class="w-6 h-6"></i>
+            <div>
+                <div class="font-bold text-sm">Settings Successfully Saved!</div>
+                <div class="text-xs text-emerald-100">Your invoices and UPI QR codes will now use the updated details.</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div>
+        <h1 class="text-2xl font-black text-slate-900 tracking-tight">Business Profile & UPI Settings</h1>
+        <p class="text-sm text-slate-500">Configure your brand identity, UPI ID, and bank settlement details.</p>
+    </div>
+
+    <form action="/settings/save" method="POST" class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+        
+        <!-- Business Info -->
+        <div>
+            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i data-lucide="briefcase" class="w-4 h-4 text-blue-600"></i> Business Information
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Business / Agency Name *</label>
+                    <input type="text" name="business_name" value="{{ profile.business_name }}" required
+                           class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-semibold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Owner / Signatory Name *</label>
+                    <input type="text" name="owner_name" value="{{ profile.owner_name }}" required
+                           class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-semibold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Support WhatsApp Number *</label>
+                    <input type="text" name="phone" value="{{ profile.phone }}" required
+                           class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-semibold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Official Email *</label>
+                    <input type="email" name="email" value="{{ profile.email }}" required
+                           class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-semibold">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-slate-600 mb-1">GSTIN (Optional)</label>
+                    <input type="text" name="gstin" value="{{ profile.gstin }}" placeholder="29AAAAA0000A1Z5"
+                           class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-semibold font-mono">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Registered Address</label>
+                    <textarea name="address" rows="2"
+                              class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-semibold">{{ profile.address }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <hr class="border-slate-100">
+
+        <!-- Payment Settlement Info -->
+        <div>
+            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i data-lucide="credit-card" class="w-4 h-4 text-emerald-600"></i> Direct UPI & Bank Settlement
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Primary UPI ID (VPA) *</label>
+                    <input type="text" name="upi_id" value="{{ profile.upi_id }}" required placeholder="e.g. yourname@okhdfcbank"
+                           class="w-full bg-blue-50/50 border border-blue-300 rounded-xl px-3.5 py-2.5 text-sm font-bold text-blue-900 font-mono">
+                    <p class="text-[11px] text-slate-400 mt-1">This UPI ID is encoded into all client payment QR codes and 1-tap mobile payment buttons.</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Bank Name</label>
+                    <input type="text" name="bank_name" value="{{ profile.bank_name }}" placeholder="e.g. HDFC Bank"
+                           class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-semibold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Account Number</label>
+                    <input type="text" name="acc_number" value="{{ profile.acc_number }}" placeholder="50100..."
+                           class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-semibold font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">IFSC Code</label>
+                    <input type="text" name="ifsc_code" value="{{ profile.ifsc_code }}" placeholder="HDFC000..."
+                           class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-semibold font-mono">
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 flex justify-end">
+            <button type="submit" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-md transition">
+                <i data-lucide="save" class="w-4 h-4"></i>
+                <span>Save Business Profile</span>
+            </button>
+        </div>
+
+    </form>
+
+</div>
+{% endblock %}

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{ invoice.invoice_number }} &bull; {{ profile.business_name }}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f1f5f9;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen py-8 px-4 sm:px-6">
+
+    <div class="max-w-3xl mx-auto space-y-6">
+
+        {% if request.query_params.get('paid_success') %}
+        <div class="bg-emerald-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <i data-lucide="check-circle" class="w-6 h-6"></i>
+                <div>
+                    <div class="font-bold text-sm">Payment Confirmation Received!</div>
+                    <div class="text-xs text-emerald-100">Thank you. The vendor has been notified and your invoice status has been updated.</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Payment Hero Card (Mobile-First Instant Pay) -->
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden">
+            <!-- Top Gradient Header -->
+            <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 p-6 sm:p-8 text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <div class="text-xs uppercase font-extrabold tracking-wider text-blue-200">Invoice from</div>
+                    <div class="text-2xl font-black mt-0.5">{{ profile.business_name }}</div>
+                    <div class="text-xs text-blue-100 mt-1">Invoice #: <b>{{ invoice.invoice_number }}</b> &bull; Due: <b>{{ invoice.due_date }}</b></div>
+                </div>
+                <div class="text-left sm:text-right bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/20">
+                    <div class="text-xs text-blue-200 uppercase font-semibold">Total Amount Due</div>
+                    <div class="text-3xl font-black text-white">₹{{ invoice.grand_total | inr }}</div>
+                </div>
+            </div>
+
+            <!-- Dynamic UPI Scan & Pay Section -->
+            {% if invoice.status != 'paid' %}
+            <div class="p-6 sm:p-8 bg-slate-50 border-b border-slate-200 text-center space-y-6">
+                <div>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 mb-2">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> 0% Fee Instant UPI Settlement
+                    </span>
+                    <h2 class="text-lg font-extrabold text-slate-900">Scan QR to Pay with any UPI App</h2>
+                    <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Open Google Pay, PhonePe, Paytm, CRED or BHIM on your smartphone to scan and pay.</p>
+                </div>
+
+                <!-- UPI QR Code -->
+                <div class="inline-block p-4 bg-white rounded-2xl shadow-md border border-slate-200">
+                    <img src="/pay/{{ invoice.token }}/qr" alt="UPI QR Code" class="w-48 h-48 mx-auto rounded-lg">
+                    <div class="text-[11px] font-mono text-slate-500 font-bold mt-2">{{ profile.upi_id }}</div>
+                </div>
+
+                <!-- 1-Tap UPI Launcher for Mobile -->
+                <div class="max-w-sm mx-auto space-y-2">
+                    <a href="{{ upi_uri }}" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-lg shadow-blue-500/30 transition transform hover:-translate-y-0.5">
+                        <i data-lucide="smartphone" class="w-5 h-5"></i>
+                        <span>Tap to Pay with GPay / PhonePe</span>
+                    </a>
+                    <div class="text-[11px] text-slate-400">On mobile? Tap button above to open your UPI app directly.</div>
+                </div>
+
+                <!-- Copy UPI ID -->
+                <div class="flex items-center justify-center gap-2 pt-2">
+                    <span class="text-xs text-slate-500">UPI ID:</span>
+                    <code class="text-xs bg-slate-200/80 px-2 py-1 rounded font-mono text-slate-800 font-semibold">{{ profile.upi_id }}</code>
+                    <button onclick="navigator.clipboard.writeText('{{ profile.upi_id }}'); alert('UPI ID copied!');" class="text-xs text-blue-600 font-bold hover:underline">
+                        Copy
+                    </button>
+                </div>
+            </div>
+            {% else %}
+            <!-- Paid Banner -->
+            <div class="p-8 bg-emerald-50 text-center border-b border-emerald-100 space-y-2">
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <i data-lucide="check" class="w-7 h-7 stroke-[3]"></i>
+                </div>
+                <h2 class="text-xl font-black text-emerald-800">Invoice Fully Paid</h2>
+                <p class="text-xs text-emerald-600">This invoice has been cleared and marked paid. Thank you for your business!</p>
+            </div>
+            {% endif %}
+
+            <!-- Invoice Details Sheet -->
+            <div class="p-6 sm:p-8 space-y-6">
+                <!-- Parties -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs text-slate-600 border-b border-slate-100 pb-6">
+                    <div>
+                        <div class="text-[10px] uppercase font-bold text-slate-400">Issued By</div>
+                        <div class="font-bold text-slate-900 text-sm mt-0.5">{{ profile.business_name }}</div>
+                        <div>{{ profile.address }}</div>
+                        <div>GSTIN: <span class="font-bold text-slate-700">{{ profile.gstin }}</span></div>
+                        <div>Phone: {{ profile.phone }} &bull; Email: {{ profile.email }}</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] uppercase font-bold text-slate-400">Billed To</div>
+                        <div class="font-bold text-slate-900 text-sm mt-0.5">{{ invoice.client_name }}</div>
+                        {% if invoice.client_company %}<div>{{ invoice.client_company }}</div>{% endif %}
+                        <div>{{ invoice.client_address }}</div>
+                        <div>Phone: {{ invoice.client_phone }}</div>
+                    </div>
+                </div>
+
+                <!-- Line Items Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-400">
+                                <th class="py-2">Item</th>
+                                <th class="py-2 text-center">Qty</th>
+                                <th class="py-2 text-right">Price</th>
+                                <th class="py-2 text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for item in items %}
+                            <tr>
+                                <td class="py-3 font-semibold text-slate-800">{{ item.description }}</td>
+                                <td class="py-3 text-center text-slate-500">{{ item.quantity }}</td>
+                                <td class="py-3 text-right text-slate-500">₹{{ item.unit_price | inr }}</td>
+                                <td class="py-3 text-right font-bold text-slate-900">₹{{ item.total | inr }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Breakdown Totals -->
+                <div class="border-t border-slate-200 pt-4 flex flex-col items-end space-y-1.5 text-sm">
+                    <div class="flex justify-between w-64 text-slate-500">
+                        <span>Subtotal</span>
+                        <span class="font-semibold text-slate-800">₹{{ invoice.subtotal | inr }}</span>
+                    </div>
+                    <div class="flex justify-between w-64 text-slate-500">
+                        <span>GST ({{ invoice.tax_rate }}%)</span>
+                        <span class="font-semibold text-slate-800">₹{{ invoice.tax_amount | inr }}</span>
+                    </div>
+                    {% if invoice.discount_amount %}
+                    <div class="flex justify-between w-64 text-emerald-600">
+                        <span>Discount</span>
+                        <span class="font-semibold">-₹{{ invoice.discount_amount | inr }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex justify-between w-64 text-base font-extrabold text-slate-900 border-t border-slate-200 pt-2 mt-2">
+                        <span>Grand Total</span>
+                        <span class="text-blue-600">₹{{ invoice.grand_total | inr }}</span>
+                    </div>
+                </div>
+
+                <!-- Bank Transfer Alternative -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs text-slate-600 space-y-1">
+                    <div class="font-bold text-slate-800 uppercase tracking-wider text-[11px] mb-1">Direct NEFT / IMPS Bank Details</div>
+                    <div><b>Bank Name:</b> {{ profile.bank_name }}</div>
+                    <div><b>Account Number:</b> <span class="font-mono font-bold">{{ profile.acc_number }}</span></div>
+                    <div><b>IFSC Code:</b> <span class="font-mono font-bold">{{ profile.ifsc_code }}</span></div>
+                    <div><b>Account Holder:</b> {{ profile.business_name }}</div>
+                </div>
+
+                <!-- Actions: Mark Paid + Download PDF -->
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-100">
+                    <a href="/invoices/{{ invoice.id }}/pdf" class="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1.5">
+                        <i data-lucide="download" class="w-4 h-4"></i> Download Official Tax Invoice PDF
+                    </a>
+
+                    {% if invoice.status != 'paid' %}
+                    <form action="/pay/{{ invoice.token }}/mark-paid" method="POST">
+                        <button type="submit" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-4 py-2 rounded-xl transition flex items-center gap-1.5">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i> I have made the payment
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+
+        <div class="text-center text-xs text-slate-400">
+            Powered by <b>CollectFast</b> &bull; Zero-commission invoicing engine
+        </div>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

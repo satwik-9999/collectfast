@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Invoice {{ invoice.invoice_number }} &bull; CollectFast{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <a href="/invoices" class="text-xs font-bold text-slate-500 hover:text-blue-600 flex items-center gap-1 mb-1">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Invoices
+            </a>
+            <div class="flex items-center gap-3">
+                <h1 class="text-2xl font-black text-slate-900">{{ invoice.invoice_number }}</h1>
+                {% if invoice.status == 'paid' %}
+                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i> PAID
+                </span>
+                {% elif invoice.status == 'overdue' %}
+                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">
+                    <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> OVERDUE
+                </span>
+                {% else %}
+                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                    <i data-lucide="clock" class="w-3.5 h-3.5"></i> PENDING
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="/invoices/{{ invoice.id }}/pdf" class="inline-flex items-center gap-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm transition">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Download Tax PDF</span>
+            </a>
+
+            <!-- Status Toggle Form -->
+            <form action="/invoices/{{ invoice.id }}/status" method="POST" class="inline">
+                {% if invoice.status == 'paid' %}
+                <input type="hidden" name="status" value="pending">
+                <button type="submit" class="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-4 py-2.5 rounded-xl transition">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Mark as Pending
+                </button>
+                {% else %}
+                <input type="hidden" name="status" value="paid">
+                <button type="submit" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm transition">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i> Mark as Paid
+                </button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- WhatsApp Payment Chaser Cards -->
+    {% if invoice.status != 'paid' %}
+    <div class="bg-gradient-to-r from-emerald-900 to-teal-950 rounded-2xl p-6 text-white shadow-lg space-y-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                    <i data-lucide="message-circle" class="w-5 h-5 fill-emerald-400"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-white">Instant WhatsApp Payment Chaser</h3>
+                    <p class="text-xs text-emerald-200/80">Send automated payment reminders directly to <b>{{ invoice.client_name }}</b> ({{ invoice.client_phone }}).</p>
+                </div>
+            </div>
+            <span class="text-xs font-semibold px-2.5 py-1 bg-white/10 rounded-full border border-white/10">3 Templates</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+            <!-- 1. Gentle Reminder -->
+            <div class="bg-white/10 hover:bg-white/15 p-4 rounded-xl border border-white/10 flex flex-col justify-between transition">
+                <div>
+                    <div class="text-xs font-bold uppercase text-emerald-300">1. Friendly / Polite Nudge</div>
+                    <p class="text-xs text-slate-200 mt-1 italic line-clamp-2">"Hello {{ invoice.client_name }}, hope you are well. Here is invoice {{ invoice.invoice_number }} due on {{ invoice.due_date }}..."</p>
+                </div>
+                <a href="{{ wa_gentle }}" target="_blank" class="mt-3 inline-flex items-center justify-center gap-1.5 bg-white text-emerald-900 hover:bg-emerald-50 text-xs font-bold py-2 px-3 rounded-lg transition shadow">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i> Send Friendly Nudge
+                </a>
+            </div>
+
+            <!-- 2. Due Today -->
+            <div class="bg-white/10 hover:bg-white/15 p-4 rounded-xl border border-white/10 flex flex-col justify-between transition">
+                <div>
+                    <div class="text-xs font-bold uppercase text-amber-300">2. Due Today Notice</div>
+                    <p class="text-xs text-slate-200 mt-1 italic line-clamp-2">"Hi {{ invoice.client_name }}, gentle reminder that invoice for ₹{{ invoice.grand_total | inr }} is pending. Instant UPI link..."</p>
+                </div>
+                <a href="{{ wa_urgent }}" target="_blank" class="mt-3 inline-flex items-center justify-center gap-1.5 bg-amber-400 text-slate-900 hover:bg-amber-300 text-xs font-bold py-2 px-3 rounded-lg transition shadow">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i> Send Due Notice
+                </a>
+            </div>
+
+            <!-- 3. Overdue Notice -->
+            <div class="bg-white/10 hover:bg-white/15 p-4 rounded-xl border border-white/10 flex flex-col justify-between transition">
+                <div>
+                    <div class="text-xs font-bold uppercase text-rose-300">3. Overdue / Urgent Notice</div>
+                    <p class="text-xs text-slate-200 mt-1 italic line-clamp-2">"Dear {{ invoice.client_name }}, invoice {{ invoice.invoice_number }} (₹{{ invoice.grand_total | inr }}) is now overdue. Kindly tap to pay..."</p>
+                </div>
+                <a href="{{ wa_overdue }}" target="_blank" class="mt-3 inline-flex items-center justify-center gap-1.5 bg-rose-500 text-white hover:bg-rose-400 text-xs font-bold py-2 px-3 rounded-lg transition shadow">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i> Send Overdue Notice
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Shareable Client Portal URL -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Client Public Payment Link</div>
+            <div class="text-sm font-semibold text-slate-800 mt-0.5 break-all select-all">{{ public_url }}</div>
+            <p class="text-xs text-slate-400 mt-0.5">Your client opens this to scan the instant UPI QR code or pay via GPay/PhonePe.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="navigator.clipboard.writeText('{{ public_url }}'); alert('Payment link copied to clipboard!');"
+                    class="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-3.5 py-2 rounded-lg transition">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Link
+            </button>
+            <a href="{{ public_url }}" target="_blank" class="inline-flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold px-3.5 py-2 rounded-lg transition">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Open Portal
+            </a>
+        </div>
+    </div>
+
+    <!-- Invoice Visual Sheet (What the PDF and invoice look like) -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 sm:p-12 space-y-8">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-start gap-6 border-b border-slate-100 pb-8">
+            <div>
+                <div class="text-2xl font-black text-slate-900">{{ profile.business_name }}</div>
+                <div class="text-xs text-slate-500 mt-1 leading-relaxed">
+                    {{ profile.address }}<br>
+                    Phone: {{ profile.phone }} &bull; Email: {{ profile.email }}<br>
+                    GSTIN: <span class="font-bold text-slate-700">{{ profile.gstin }}</span>
+                </div>
+            </div>
+
+            <div class="text-left sm:text-right">
+                <span class="text-xs uppercase font-extrabold tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full">TAX INVOICE</span>
+                <div class="text-lg font-black text-slate-900 mt-2">{{ invoice.invoice_number }}</div>
+                <div class="text-xs text-slate-500 mt-1">
+                    Issued: <span class="font-semibold text-slate-700">{{ invoice.issue_date }}</span><br>
+                    Due Date: <span class="font-semibold text-slate-700">{{ invoice.due_date }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Billed To -->
+        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Billed To</div>
+            <div class="text-base font-bold text-slate-900">{{ invoice.client_name }}</div>
+            {% if invoice.client_company %}
+            <div class="text-xs font-semibold text-slate-600">{{ invoice.client_company }}</div>
+            {% endif %}
+            <div class="text-xs text-slate-500 mt-1">
+                {{ invoice.client_address }}<br>
+                Phone: {{ invoice.client_phone }} &bull; Email: {{ invoice.client_email }}
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
+                        <th class="py-3 px-2">#</th>
+                        <th class="py-3 px-4">Item Description</th>
+                        <th class="py-3 px-4 text-center">Qty</th>
+                        <th class="py-3 px-4 text-right">Unit Price</th>
+                        <th class="py-3 px-4 text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-sm">
+                    {% for item in items %}
+                    <tr>
+                        <td class="py-4 px-2 text-slate-400 text-xs font-mono">{{ loop.index }}</td>
+                        <td class="py-4 px-4 font-semibold text-slate-900">{{ item.description }}</td>
+                        <td class="py-4 px-4 text-center text-slate-600">{{ item.quantity }}</td>
+                        <td class="py-4 px-4 text-right text-slate-600">₹{{ item.unit_price | inr }}</td>
+                        <td class="py-4 px-4 text-right font-bold text-slate-900">₹{{ item.total | inr }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Totals & UPI Pay Box -->
+        <div class="border-t border-slate-200 pt-6 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            <!-- Payment instructions -->
+            <div class="bg-blue-50/60 p-5 rounded-2xl border border-blue-100 space-y-2">
+                <div class="text-xs font-bold uppercase tracking-wider text-blue-800 flex items-center gap-1.5">
+                    <i data-lucide="qr-code" class="w-4 h-4"></i> Direct Instant Settlement
+                </div>
+                <div class="text-xs text-slate-700 leading-relaxed">
+                    <b>UPI VPA:</b> <span class="font-mono font-bold text-blue-700">{{ profile.upi_id }}</span><br>
+                    <b>Bank:</b> {{ profile.bank_name }} &bull; <b>A/C:</b> {{ profile.acc_number }}<br>
+                    <b>IFSC:</b> {{ profile.ifsc_code }}
+                </div>
+                {% if invoice.notes %}
+                <div class="text-xs text-slate-500 pt-2 border-t border-blue-100">
+                    <b>Notes:</b> {{ invoice.notes }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Amounts breakdown -->
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between text-slate-500">
+                    <span>Subtotal</span>
+                    <span class="font-semibold text-slate-900">₹{{ invoice.subtotal | inr }}</span>
+                </div>
+                <div class="flex justify-between text-slate-500">
+                    <span>GST ({{ invoice.tax_rate }}%)</span>
+                    <span class="font-semibold text-slate-900">₹{{ invoice.tax_amount | inr }}</span>
+                </div>
+                {% if invoice.discount_amount %}
+                <div class="flex justify-between text-emerald-600">
+                    <span>Discount</span>
+                    <span class="font-semibold">-₹{{ invoice.discount_amount | inr }}</span>
+                </div>
+                {% endif %}
+                <div class="border-t border-slate-200 pt-2 flex justify-between text-lg font-black text-slate-900">
+                    <span>Grand Total</span>
+                    <span class="text-blue-600">₹{{ invoice.grand_total | inr }}</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

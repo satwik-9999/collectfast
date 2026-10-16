@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Monetization & Plans &bull; CollectFast{% endblock %}
+
+{% block content %}
+<div class="space-y-12 max-w-5xl mx-auto">
+
+    <!-- Top Headline -->
+    <div class="text-center space-y-3">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> SaaS Monetization Architecture
+        </span>
+        <h1 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+            How CollectFast Reaches ₹1,00,000 / Month
+        </h1>
+        <p class="text-slate-500 text-sm max-w-2xl mx-auto">
+            A battle-tested pricing model designed for Indian freelancers, agencies, and service SMBs. Zero transaction fee overhead for the customer.
+        </p>
+    </div>
+
+    <!-- The 1 Lakh Roadmap Cards -->
+    <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <i data-lucide="target" class="w-5 h-5 text-emerald-400"></i> The Math to ₹1,00,000/Month Recurring Revenue (MRR)
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                <div class="text-xs uppercase font-bold text-emerald-400 tracking-wider">Strategy A: Digital Agencies & Studios</div>
+                <div class="text-2xl font-black text-white mt-1">67 Agencies @ ₹1,499 / mo</div>
+                <div class="text-emerald-300 font-bold text-sm mt-0.5">= ₹1,00,433 Monthly MRR</div>
+                <p class="text-xs text-slate-300 mt-2">
+                    Digital agencies (SEO, Web Design, Video Editing, Social Media) bill ₹30k–₹2 Lakhs per client. Paying ₹1,499/mo to recover invoices on time is an absolute no-brainer for them.
+                </p>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                <div class="text-xs uppercase font-bold text-blue-400 tracking-wider">Strategy B: Freelancers & Solo Creators</div>
+                <div class="text-2xl font-black text-white mt-1">200 Freelancers @ ₹499 / mo</div>
+                <div class="text-blue-300 font-bold text-sm mt-0.5">= ₹99,800 Monthly MRR</div>
+                <p class="text-xs text-slate-300 mt-2">
+                    Over 15 million freelancers in India lose sleep chasing clients. At ₹499/mo, friction is negligible because it saves them 10+ awkward hours each month.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing Tiers Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Free Starter -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 flex flex-col justify-between shadow-sm">
+            <div>
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Free Tier</div>
+                <div class="text-3xl font-black text-slate-900 mt-2">₹0</div>
+                <div class="text-xs text-slate-400">Free forever</div>
+
+                <div class="my-6 border-t border-slate-100 pt-6 space-y-3 text-xs text-slate-600">
+                    <div class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Up to 3 invoices/month</div>
+                    <div class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Dynamic UPI QR generation</div>
+                    <div class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Basic WhatsApp reminder link</div>
+                    <div class="flex items-center gap-2 text-slate-400"><i data-lucide="x" class="w-4 h-4"></i> No automated recurring invoices</div>
+                    <div class="flex items-center gap-2 text-slate-400"><i data-lucide="x" class="w-4 h-4"></i> CollectFast watermark on PDF</div>
+                </div>
+            </div>
+
+            <form action="/pricing/upgrade" method="POST">
+                <input type="hidden" name="plan" value="free">
+                <button type="submit" class="w-full py-2.5 rounded-xl border border-slate-300 font-bold text-xs text-slate-700 hover:bg-slate-50 transition">
+                    {% if profile.plan_tier == 'free' %}Current Plan{% else %}Downgrade to Free{% endif %}
+                </button>
+            </form>
+        </div>
+
+        <!-- Pro Tier (Most Popular) -->
+        <div class="bg-white rounded-3xl border-2 border-blue-600 p-6 flex flex-col justify-between shadow-xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-black uppercase tracking-wider py-1 px-4 rounded-bl-xl">
+                Most Popular
+            </div>
+
+            <div>
+                <div class="text-xs font-bold uppercase tracking-wider text-blue-600">Pro Solo</div>
+                <div class="text-3xl font-black text-slate-900 mt-2">₹499 <span class="text-xs text-slate-500 font-normal">/ month</span></div>
+                <div class="text-xs text-slate-500">or ₹3,999 billed annually (save 33%)</div>
+
+                <div class="my-6 border-t border-slate-100 pt-6 space-y-3 text-xs text-slate-600">
+                    <div class="flex items-center gap-2 font-semibold text-slate-900"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Unlimited GST Invoices</div>
+                    <div class="flex items-center gap-2 font-semibold text-slate-900"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> 1-Click WhatsApp Chaser (3 Nudge Tones)</div>
+                    <div class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Instant 0% fee UPI Pay portal</div>
+                    <div class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Remove CollectFast branding</div>
+                    <div class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Client Khata & ledger tracking</div>
+                </div>
+            </div>
+
+            <form action="/pricing/upgrade" method="POST">
+                <input type="hidden" name="plan" value="pro">
+                <button type="submit" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-md shadow-blue-500/30 transition">
+                    {% if profile.plan_tier == 'pro' %}Active Plan (Pro){% else %}Switch to Pro (₹499/mo){% endif %}
+                </button>
+            </form>
+        </div>
+
+        <!-- Agency Tier -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 flex flex-col justify-between shadow-sm">
+            <div>
+                <div class="text-xs font-bold uppercase tracking-wider text-purple-600">Agency & Scale</div>
+                <div class="text-3xl font-black text-slate-900 mt-2">₹1,499 <span class="text-xs text-slate-500 font-normal">/ month</span></div>
+                <div class="text-xs text-slate-500">or ₹11,999 billed annually</div>
+
+                <div class="my-6 border-t border-slate-100 pt-6 space-y-3 text-xs text-slate-600">
+                    <div class="flex items-center gap-2 font-semibold text-slate-900"><i data-lucide="check" class="w-4 h-4 text-purple-600"></i> Everything in Pro</div>
+                    <div class="flex items-center gap-2 font-semibold text-slate-900"><i data-lucide="check" class="w-4 h-4 text-purple-600"></i> Multi-team logins & roles</div>
+                    <div class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-purple-600"></i> Custom domain (e.g. pay.agency.com)</div>
+                    <div class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-purple-600"></i> Automated recurring retainer billing</div>
+                    <div class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-purple-600"></i> Dedicated WhatsApp Business API bot</div>
+                </div>
+            </div>
+
+            <form action="/pricing/upgrade" method="POST">
+                <input type="hidden" name="plan" value="agency">
+                <button type="submit" class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition">
+                    {% if profile.plan_tier == 'agency' %}Active Plan (Agency){% else %}Upgrade to Agency{% endif %}
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Client ROI Calculator -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+        <h3 class="text-lg font-bold text-slate-900 mb-2">Customer Value Proposition: Why People Pay Instantly</h3>
+        <p class="text-xs text-slate-500 mb-6">When selling this app to prospective users, show them this simple return on investment:</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+            <div class="bg-slate-50 p-5 rounded-2xl">
+                <div class="text-xs font-bold uppercase text-slate-400">Average Unpaid Dues</div>
+                <div class="text-2xl font-black text-slate-900 mt-1">₹45,000</div>
+                <div class="text-[11px] text-slate-500 mt-1">Stuck in overdue invoices for 30+ days</div>
+            </div>
+            <div class="bg-slate-50 p-5 rounded-2xl">
+                <div class="text-xs font-bold uppercase text-slate-400">Software Cost</div>
+                <div class="text-2xl font-black text-blue-600 mt-1">₹499 / mo</div>
+                <div class="text-[11px] text-slate-500 mt-1">Less than the price of 2 cups of coffee</div>
+            </div>
+            <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200">
+                <div class="text-xs font-bold uppercase text-emerald-700">Immediate ROI</div>
+                <div class="text-2xl font-black text-emerald-700 mt-1">90x Return</div>
+                <div class="text-[11px] text-emerald-600 mt-1">Recovering 1 invoice pays for 7.5 years!</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

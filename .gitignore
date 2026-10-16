@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+collectfast.db
+*.sqlite3
+.DS_Store
+*.log

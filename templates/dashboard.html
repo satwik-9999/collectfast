@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard &bull; CollectFast{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- Monthly Target Banner (₹1,00,000 Goal) -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+            <i data-lucide="trending-up" class="w-72 h-72 text-white"></i>
+        </div>
+        <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div class="space-y-2">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-wider border border-blue-400/20">
+                    <i data-lucide="target" class="w-3.5 h-3.5"></i> ₹1,00,000 Monthly Goal Tracker
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                    Welcome back, {{ profile.owner_name }}! 👋
+                </h1>
+                <p class="text-slate-300 text-sm max-w-xl">
+                    You have collected <span class="font-bold text-emerald-400">₹{{ total_paid | inr }}</span> this month. Recovering pending dues will push you well beyond your monthly target.
+                </p>
+            </div>
+            <div class="flex flex-col items-start md:items-end gap-2 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10 min-w-[200px]">
+                <div class="text-xs uppercase tracking-wider font-semibold text-slate-300">Goal Progress</div>
+                <div class="text-2xl font-black text-white">
+                    {{ "%.1f" | format(total_paid / 100000 * 100) }}%
+                </div>
+                <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                    <div class="bg-gradient-to-r from-emerald-400 to-blue-400 h-full rounded-full" style="width: {{ [total_paid / 1000, 100]|min }}%"></div>
+                </div>
+                <span class="text-[11px] text-slate-300">Target: ₹1,00,000 / month</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4 Key Metrics Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Collected -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+            <div class="flex items-center justify-between text-slate-400 mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Collected</span>
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <div class="text-2xl font-black text-slate-900">₹{{ total_paid | inr }}</div>
+            <div class="text-xs text-emerald-600 font-semibold mt-1 flex items-center gap-1">
+                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> Direct UPI Bank Deposits
+            </div>
+        </div>
+
+        <!-- Pending -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+            <div class="flex items-center justify-between text-slate-400 mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Pending Dues</span>
+                <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <i data-lucide="clock" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <div class="text-2xl font-black text-slate-900">₹{{ total_pending | inr }}</div>
+            <div class="text-xs text-amber-600 font-semibold mt-1">Awaiting client payment</div>
+        </div>
+
+        <!-- Overdue -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+            <div class="flex items-center justify-between text-slate-400 mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Overdue (Critical)</span>
+                <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <div class="text-2xl font-black text-rose-600">₹{{ total_overdue | inr }}</div>
+            <div class="text-xs text-rose-500 font-semibold mt-1 flex items-center gap-1">
+                <i data-lucide="bell" class="w-3.5 h-3.5"></i> Action needed today
+            </div>
+        </div>
+
+        <!-- Recovery / Collection Rate -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+            <div class="flex items-center justify-between text-slate-400 mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Recovery Rate</span>
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <i data-lucide="percent" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <div class="text-2xl font-black text-slate-900">{{ collection_rate }}%</div>
+            <div class="text-xs text-slate-500 font-medium mt-1">Industry avg is ~72%</div>
+        </div>
+    </div>
+
+    <!-- Smart WhatsApp Chaser Section -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="flex h-3 w-3 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                    </span>
+                    <h2 class="text-lg font-bold text-slate-900">Instant WhatsApp Payment Chaser</h2>
+                </div>
+                <p class="text-xs text-slate-500 mt-1">One-click behavioral nudges sent directly from your WhatsApp to get paid 3x faster.</p>
+            </div>
+            <a href="/invoices?status=overdue" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                View all pending <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </a>
+        </div>
+
+        {% if attention_invoices %}
+        <div class="divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden">
+            {% for inv in attention_invoices %}
+            <div class="p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-slate-50/80 transition">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full {% if inv.status == 'overdue' %}bg-rose-100 text-rose-600{% else %}bg-amber-100 text-amber-600{% endif %} flex items-center justify-center font-bold text-sm">
+                        {{ inv.client_name[:2].upper() }}
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-slate-900 text-sm">{{ inv.client_name }}</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full font-semibold {% if inv.status == 'overdue' %}bg-rose-100 text-rose-700{% else %}bg-amber-100 text-amber-700{% endif %}">
+                                {{ inv.status.upper() }}
+                            </span>
+                        </div>
+                        <div class="text-xs text-slate-500 mt-0.5">
+                            {{ inv.invoice_number }} &bull; Due: {{ inv.due_date }} &bull; Phone: {{ inv.client_phone }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between w-full md:w-auto gap-4">
+                    <div class="text-right">
+                        <div class="font-bold text-slate-900 text-base">₹{{ inv.grand_total | inr }}</div>
+                        <div class="text-[11px] text-slate-400">Total Due</div>
+                    </div>
+
+                    <a href="/invoices/{{ inv.id }}" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg shadow-sm transition">
+                        <i data-lucide="message-circle" class="w-4 h-4 fill-white"></i>
+                        <span>Chase via WhatsApp</span>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8 text-slate-500 text-sm">
+            🎉 All invoices are fully paid! You have zero overdue accounts.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Invoices List -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+            <h2 class="text-lg font-bold text-slate-900">Recent Invoices</h2>
+            <a href="/invoices" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                View all invoices <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </a>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
+                        <th class="py-3 px-6">Invoice #</th>
+                        <th class="py-3 px-6">Client</th>
+                        <th class="py-3 px-6">Issue Date</th>
+                        <th class="py-3 px-6">Due Date</th>
+                        <th class="py-3 px-6">Amount</th>
+                        <th class="py-3 px-6">Status</th>
+                        <th class="py-3 px-6 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-sm">
+                    {% for inv in recent_invoices %}
+                    <tr class="hover:bg-slate-50/50 transition">
+                        <td class="py-4 px-6 font-bold text-blue-600">
+                            <a href="/invoices/{{ inv.id }}" class="hover:underline">{{ inv.invoice_number }}</a>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="font-semibold text-slate-800">{{ inv.client_name }}</div>
+                            {% if inv.client_company %}
+                            <div class="text-xs text-slate-400">{{ inv.client_company }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6 text-slate-500">{{ inv.issue_date }}</td>
+                        <td class="py-4 px-6 text-slate-500">{{ inv.due_date }}</td>
+                        <td class="py-4 px-6 font-bold text-slate-900">₹{{ inv.grand_total | inr }}</td>
+                        <td class="py-4 px-6">
+                            {% if inv.status == 'paid' %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                                <i data-lucide="check" class="w-3 h-3"></i> Paid
+                            </span>
+                            {% elif inv.status == 'overdue' %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800">
+                                <i data-lucide="alert-circle" class="w-3 h-3"></i> Overdue
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                                <i data-lucide="clock" class="w-3 h-3"></i> Pending
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="/invoices/{{ inv.id }}/pdf" class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded" title="Download PDF">
+                                    <i data-lucide="download" class="w-4 h-4"></i>
+                                </a>
+                                <a href="/invoices/{{ inv.id }}" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition">
+                                    Manage
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

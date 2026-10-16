@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Create Invoice &bull; CollectFast{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <a href="/invoices" class="text-xs font-bold text-slate-500 hover:text-blue-600 flex items-center gap-1 mb-2">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Invoices
+            </a>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Create Professional Tax Invoice</h1>
+            <p class="text-sm text-slate-500">Includes direct dynamic UPI QR code and 1-click WhatsApp payment recovery links.</p>
+        </div>
+    </div>
+
+    <form action="/invoices/create" method="POST" id="invoiceForm" class="space-y-6">
+        <!-- Main Form Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+            
+            <!-- Top Row: Invoice Number, Dates -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 border-b border-slate-100 pb-6">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Invoice Number</label>
+                    <input type="text" name="invoice_number" value="{{ next_inv_num }}" required
+                           class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Issue Date</label>
+                    <input type="date" name="issue_date" value="{{ today_str }}" required
+                           class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Due Date</label>
+                    <input type="date" name="due_date" value="{{ due_str }}" required
+                           class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+            </div>
+
+            <!-- Client Selector / Quick Add -->
+            <div class="border-b border-slate-100 pb-6">
+                <div class="flex justify-between items-center mb-3">
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider">Billed To (Client)</label>
+                    <button type="button" onclick="toggleNewClient()" id="toggleClientBtn" class="text-xs font-bold text-blue-600 hover:text-blue-700">
+                        + Add New Client
+                    </button>
+                </div>
+
+                <div id="existingClientDiv">
+                    <select name="client_id" id="clientSelect" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        {% for client in clients %}
+                        <option value="{{ client.id }}">{{ client.name }} {% if client.company %}({{ client.company }}){% endif %} - {{ client.phone }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- New Client Sub-form (Hidden by default unless selected) -->
+                <div id="newClientDiv" class="hidden bg-slate-50 p-4 rounded-xl border border-slate-200 mt-3 space-y-3">
+                    <div class="text-xs font-bold text-slate-700">New Client Details</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input type="text" name="new_client_name" placeholder="Client Contact Name *" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                        <input type="text" name="new_client_phone" placeholder="WhatsApp Number (e.g. 919876543210) *" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                        <input type="text" name="new_client_company" placeholder="Company / Brand Name" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                        <input type="email" name="new_client_email" placeholder="Email Address" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Line Items Table -->
+            <div>
+                <div class="flex justify-between items-center mb-3">
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider">Line Items & Deliverables</label>
+                </div>
+
+                <div class="space-y-3" id="itemsContainer">
+                    <!-- Default Row 1 -->
+                    <div class="item-row grid grid-cols-12 gap-3 items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div class="col-span-12 sm:col-span-6">
+                            <input type="text" name="item_desc" placeholder="Service or product description..." required
+                                   value="Digital Marketing & Social Media Retainer (Monthly)"
+                                   class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium">
+                        </div>
+                        <div class="col-span-4 sm:col-span-2">
+                            <input type="number" name="item_qty" placeholder="Qty" value="1" step="any" min="0.01" required
+                                   oninput="calculateTotals()"
+                                   class="qty-input w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-center">
+                        </div>
+                        <div class="col-span-5 sm:col-span-3">
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-slate-400 text-sm">₹</span>
+                                <input type="number" name="item_price" placeholder="Price" value="45000" step="any" required
+                                       oninput="calculateTotals()"
+                                       class="price-input w-full bg-white border border-slate-300 rounded-lg pl-7 pr-3 py-2 text-sm font-medium">
+                            </div>
+                        </div>
+                        <div class="col-span-3 sm:col-span-1 text-center">
+                            <button type="button" onclick="removeItem(this)" class="p-2 text-slate-400 hover:text-rose-600 transition" title="Delete Row">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" onclick="addItemRow()" class="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Add Another Item
+                </button>
+            </div>
+
+            <!-- Totals & Taxes Calculation Section -->
+            <div class="border-t border-slate-100 pt-6 flex flex-col sm:flex-row justify-between gap-6">
+                <div class="w-full sm:w-1/2 space-y-3">
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider">Payment Notes & Bank Instructions</label>
+                    <textarea name="notes" rows="4" placeholder="e.g. Please clear via UPI using the link or scan code. Account details also provided."
+                              class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-700 focus:ring-2 focus:ring-blue-500 focus:outline-none">Thank you for your business. Please complete payment via the UPI QR link or bank transfer. Direct UPI: {{ profile.upi_id }}</textarea>
+                </div>
+
+                <div class="w-full sm:w-1/2 bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-slate-500 font-medium">Subtotal</span>
+                        <span class="font-bold text-slate-900" id="displaySubtotal">₹45,000.00</span>
+                    </div>
+
+                    <div class="flex justify-between items-center text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-500 font-medium">GST (%)</span>
+                            <input type="number" name="tax_rate" id="taxRateInput" value="18" step="0.5" oninput="calculateTotals()"
+                                   class="w-16 bg-white border border-slate-300 rounded px-2 py-1 text-xs text-center font-bold">
+                        </div>
+                        <span class="font-bold text-slate-900" id="displayTax">₹8,100.00</span>
+                    </div>
+
+                    <div class="flex justify-between items-center text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-500 font-medium">Discount (₹)</span>
+                            <input type="number" name="discount_amount" id="discountInput" value="0" step="any" oninput="calculateTotals()"
+                                   class="w-24 bg-white border border-slate-300 rounded px-2 py-1 text-xs text-center font-bold">
+                        </div>
+                        <span class="font-bold text-slate-900" id="displayDiscount">-₹0.00</span>
+                    </div>
+
+                    <div class="border-t border-slate-200 pt-3 flex justify-between items-center text-lg font-black text-slate-900">
+                        <span>Grand Total (INR)</span>
+                        <span class="text-blue-600" id="displayGrandTotal">₹53,100.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button Bar -->
+            <div class="border-t border-slate-100 pt-6 flex justify-end gap-3">
+                <a href="/invoices" class="px-5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                    Cancel
+                </a>
+                <button type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-blue-500/25 transition">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    <span>Generate Invoice & Payment Links</span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let isNewClient = false;
+    function toggleNewClient() {
+        isNewClient = !isNewClient;
+        const newDiv = document.getElementById('newClientDiv');
+        const existDiv = document.getElementById('existingClientDiv');
+        const select = document.getElementById('clientSelect');
+        const btn = document.getElementById('toggleClientBtn');
+
+        if (isNewClient) {
+            newDiv.classList.remove('hidden');
+            existDiv.classList.add('hidden');
+            select.value = "new";
+            btn.innerText = "Select Existing Client";
+        } else {
+            newDiv.classList.add('hidden');
+            existDiv.classList.remove('hidden');
+            btn.innerText = "+ Add New Client";
+        }
+    }
+
+    function addItemRow() {
+        const container = document.getElementById('itemsContainer');
+        const row = document.createElement('div');
+        row.className = "item-row grid grid-cols-12 gap-3 items-center bg-slate-50 p-3 rounded-xl border border-slate-200";
+        row.innerHTML = `
+            <div class="col-span-12 sm:col-span-6">
+                <input type="text" name="item_desc" placeholder="Service or product description..." required
+                       class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium">
+            </div>
+            <div class="col-span-4 sm:col-span-2">
+                <input type="number" name="item_qty" placeholder="Qty" value="1" step="any" min="0.01" required
+                       oninput="calculateTotals()"
+                       class="qty-input w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-center">
+            </div>
+            <div class="col-span-5 sm:col-span-3">
+                <div class="relative">
+                    <span class="absolute left-3 top-2 text-slate-400 text-sm">₹</span>
+                    <input type="number" name="item_price" placeholder="Price" value="0" step="any" required
+                           oninput="calculateTotals()"
+                           class="price-input w-full bg-white border border-slate-300 rounded-lg pl-7 pr-3 py-2 text-sm font-medium">
+                </div>
+            </div>
+            <div class="col-span-3 sm:col-span-1 text-center">
+                <button type="button" onclick="removeItem(this)" class="p-2 text-slate-400 hover:text-rose-600 transition" title="Delete Row">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            </div>
+        `;
+        container.appendChild(row);
+        lucide.createIcons();
+        calculateTotals();
+    }
+
+    function removeItem(btn) {
+        const rows = document.querySelectorAll('.item-row');
+        if (rows.length > 1) {
+            btn.closest('.item-row').remove();
+            calculateTotals();
+        } else {
+            alert("At least one item is required in the invoice.");
+        }
+    }
+
+    function calculateTotals() {
+        let subtotal = 0;
+        const rows = document.querySelectorAll('.item-row');
+        rows.forEach(r => {
+            const qty = parseFloat(r.querySelector('.qty-input').value) || 0;
+            const price = parseFloat(r.querySelector('.price-input').value) || 0;
+            subtotal += (qty * price);
+        });
+
+        const taxRate = parseFloat(document.getElementById('taxRateInput').value) || 0;
+        const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+
+        const taxAmount = (subtotal * (taxRate / 100));
+        const grandTotal = Math.max(0, subtotal + taxAmount - discount);
+
+        document.getElementById('displaySubtotal').innerText = '₹' + subtotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('displayTax').innerText = '₹' + taxAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('displayDiscount').innerText = '-₹' + discount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('displayGrandTotal').innerText = '₹' + grandTotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    window.addEventListener('DOMContentLoaded', calculateTotals);
+</script>
+{% endblock %}
