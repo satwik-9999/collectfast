@@ -1,5 +1,11 @@
 # 🚀 CollectFast — 0% Fee UPI Invoicing & WhatsApp Payment Recovery Engine
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Try_Online-success?style=for-the-badge&logo=google-chrome)](https://satwik-9999.github.io/collectfast/)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-181717?style=for-the-badge&logo=github)](https://github.com/satwik-9999/collectfast)
+[![License: Commercial](https://img.shields.io/badge/License-White--Label-blue?style=for-the-badge)](./COMMERCIAL_LICENSE.md)
+
+👉 **[⚡ Click Here to Launch the Live Interactive Demo](https://satwik-9999.github.io/collectfast/)** (Simulate dynamic UPI QR codes and 1-click WhatsApp follow-ups in your browser without installing anything).
+
 **CollectFast** is a high-margin B2B Micro-SaaS designed for Indian freelancers, digital agencies, and service SMBs to generate professional GST invoices, collect instant payments with dynamic UPI QR codes (0% gateway fees), and recover unpaid dues 3x faster via 1-click WhatsApp behavioral nudges.
 
 ---
